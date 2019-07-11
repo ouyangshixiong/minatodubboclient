@@ -1,6 +1,7 @@
 package com.example.iohandler;
 
 import com.example.protocol.DemoMsgDto;
+import com.example.protocol.ProtocolWrapper;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ public class TestHandlerClient extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        log.info("client messageReceived");
+        log.info("messageReceived from server=" + ((DemoMsgDto)message).getDemoMsg());
         //从控制台接受输入
         Scanner scanner = new Scanner(System.in);
         if(scanner.hasNext()){
@@ -27,7 +28,10 @@ public class TestHandlerClient extends IoHandlerAdapter {
             }else{
                 msg.setDemoMsg(in);
             }
-            session.write(msg);
+            ProtocolWrapper protocolWrapper = new ProtocolWrapper();
+            protocolWrapper.setCMD("demo-msgdto");
+            protocolWrapper.setT(msg);
+            session.write(protocolWrapper);
         }
     }
 

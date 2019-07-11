@@ -1,6 +1,7 @@
 package com.example;
 
 import com.example.protocol.DemoMsgDto;
+import com.example.protocol.ProtocolWrapper;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
@@ -35,7 +36,10 @@ public class MinaClientMain {
         IoSession session = connectFuture.getSession();
         DemoMsgDto initMsg = new DemoMsgDto();
         initMsg.setDemoMsg("hello 1");
-        session.write(initMsg);
+        ProtocolWrapper protocolWrapper = new ProtocolWrapper();
+        protocolWrapper.setCMD("demo-msgdto");
+        protocolWrapper.setT(initMsg);
+        session.write(protocolWrapper);
 
     }
 
