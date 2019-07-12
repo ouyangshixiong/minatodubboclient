@@ -23,7 +23,10 @@ public class MinaClientMain {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContext.xml");
         log.info("*************** Demo client start up successfully!***************");
 
+        sendTextMessage(context);
+    }
 
+    private static IoSession connectTo(ClassPathXmlApplicationContext context){
         //连接上server
         NioSocketConnector tcpConnector = context.getBean("tcpConnector", NioSocketConnector.class);
         ConnectFuture connectFuture = tcpConnector.connect(address);
@@ -33,14 +36,25 @@ public class MinaClientMain {
         }else{
             log.error("client not connected");
         }
-        IoSession session = connectFuture.getSession();
+        return connectFuture.getSession();
+    }
+
+    private static void sendDemoMsgDto(ClassPathXmlApplicationContext context){
+        IoSession session = connectTo(context);
         DemoMsgDto initMsg = new DemoMsgDto();
         initMsg.setDemoMsg("hello 1");
         ProtocolWrapper protocolWrapper = new ProtocolWrapper();
         protocolWrapper.setCMD("demo-msgdto");
         protocolWrapper.setT(initMsg);
         session.write(protocolWrapper);
+    }
 
+    private static void sendTextMessage(ClassPathXmlApplicationContext context){
+        IoSession session = connectTo(context);
+        ProtocolWrapper protocolWrapper = new ProtocolWrapper();
+        protocolWrapper.setCMD("demo-msg-text");
+        protocolWrapper.setT("text message hello!");
+        session.write(protocolWrapper);
     }
 
 }

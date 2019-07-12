@@ -16,28 +16,46 @@ public class TestHandlerClient extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        log.info("messageReceived from server=" + ((DemoMsgDto)message).getDemoMsg());
+        ProtocolWrapper protocolWrapper = (ProtocolWrapper) message;
+        String CMD = protocolWrapper.getCMD();
+        if( "demo-msgdto".equals(CMD) ){
+            log.info("messageReceived from server type=demo-msgdto content="
+                    + ( (DemoMsgDto)protocolWrapper.getT()).getDemoMsg()  );
+        }else if( "demo-msg-text".equals(CMD) ){
+            log.info("messageReceived from server type=text content="
+                    + (String) protocolWrapper.getT() );
+        }else {
+            log.error("can not parse CMD from server!" + CMD);
+            return;
+        }
+
+        //准备回包
+        ProtocolWrapper resp = new ProtocolWrapper();
+        resp.setCMD(CMD);
         //从控制台接受输入
         Scanner scanner = new Scanner(System.in);
         if(scanner.hasNext()){
             String in = scanner.next();
-            DemoMsgDto msg = new DemoMsgDto();
-            if(in.equalsIgnoreCase("quit")){
-                log.info("client退出！");
-                System.exit(0);
-            }else{
-                msg.setDemoMsg(in);
+            if( "demo-msgdto".equals(CMD) ){
+                DemoMsgDto msg = new DemoMsgDto();
+                if(in.equalsIgnoreCase("quit")){
+                    log.info("client退出！");
+                    System.exit(0);
+                }else{
+                    msg.setDemoMsg(in);
+                }
+                resp.setT(msg);
+            } else {
+                resp.setT(in);
             }
-            ProtocolWrapper protocolWrapper = new ProtocolWrapper();
-            protocolWrapper.setCMD("demo-msgdto");
-            protocolWrapper.setT(msg);
-            session.write(protocolWrapper);
+            session.write(resp);
         }
     }
 
     @Override
     public void messageSent(IoSession session, Object message) throws Exception {
-        log.info("client messageSent");
+        ProtocolWrapper protocolWrapper = (ProtocolWrapper) message;
+        log.info("client messageSent" + protocolWrapper.getCMD() + "---" + protocolWrapper.getT());
         super.messageSent(session, message);
     }
 }
